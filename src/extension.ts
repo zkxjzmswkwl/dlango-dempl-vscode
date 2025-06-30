@@ -57,9 +57,73 @@ export function activate(context: vscode.ExtensionContext) {
         );
       }
       console.log(`Compiler stdout: ${stdout}`);
-      vscode.window.showInformationMessage(
-        "DEMPL templates compiled successfully."
-      );
     });
   });
+
+  // Register a formatter for .dempl files
+  context.subscriptions.push(
+    vscode.languages.registerDocumentFormattingEditProvider('dempl', {
+      provideDocumentFormattingEdits(document) {
+        const edits = [];
+        const fullRange = new vscode.Range(
+          document.positionAt(0),
+          document.positionAt(document.getText().length)
+        );
+        const formatted = formatDempl(document.getText());
+        edits.push(vscode.TextEdit.replace(fullRange, formatted));
+        return edits;
+      }
+    })
+  );
+}
+
+// Formatter implementation for .dempl files
+function formatDempl(text: string): string {
+  const lines = text.split(/\r?\n/);
+  const formatted: string[] = [];
+  let indentLevel = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    
+    if (trimmed === '') {
+      formatted.push('');
+      continue;
+    }
+
+    // Check if this is an HTML tag
+    if (trimmed.startsWith('<')) {
+      // Self-closing tag or opening tag
+      if (trimmed.includes('/>') || trimmed.match(/<[^>]+\/>/)) {
+        // Self-closing tag
+        formatted.push('    '.repeat(indentLevel) + trimmed);
+      } else if (trimmed.startsWith('</')) {
+        // Closing tag - decrease indent first
+        indentLevel = Math.max(0, indentLevel - 1);
+        formatted.push('    '.repeat(indentLevel) + trimmed);
+      } else {
+        // Opening tag
+        formatted.push('    '.repeat(indentLevel) + trimmed);
+        // Check if it's not a single-line tag (has content on same line)
+        const tagMatch = trimmed.match(/<([a-zA-Z0-9\-]+)[^>]*>(.*)$/);
+        if (tagMatch && tagMatch[2].trim() === '') {
+          // Multi-line tag, increase indent for content
+          indentLevel++;
+        }
+      }
+    } else {
+      // Regular content or D code
+      let formattedLine = trimmed;
+      
+      // Format D code: same-line braces, spaces inside { }
+      formattedLine = formattedLine.replace(/\{\s*/g, '{ ').replace(/\s*\}/g, ' }');
+      // Ensure { ... } has spaces inside
+      formattedLine = formattedLine.replace(/\{([^\s].*?[^\s])\}/g, '{ $1 }');
+      
+      formatted.push('    '.repeat(indentLevel) + formattedLine);
+    }
+  }
+  
+  return formatted.join('\n');
 }
