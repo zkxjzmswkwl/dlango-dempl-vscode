@@ -1,0 +1,118 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "dempl",
+  "scopeName": "text.html.dempl",
+  "patterns": [
+    { "include": "#dempl-component" }
+  ],
+  "repository": {
+    "dempl-component": {
+      "name": "meta.component.dempl",
+      "begin": "^\\s*(dempl)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\()",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.declaration.dempl" },
+        "2": { "name": "entity.name.function.dempl" },
+        "3": { "name": "punctuation.definition.parameters.begin.dempl" }
+      },
+      "end": "(\\s*\\})",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.block.end.dempl" }
+      },
+      "patterns": [
+        { "include": "#dempl-parameters" },
+        {
+          "name": "meta.component.body.dempl",
+          "begin": "(\\s*\\{)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.section.block.begin.dempl" }
+          },
+          "end": "(?=})",
+          "patterns": [
+            { "include": "#template-body" }
+          ]
+        }
+      ]
+    },
+    "dempl-parameters": {
+      "name": "meta.parameters.dempl",
+      "end": "(?=\\))",
+      "patterns": [
+        {
+          "name": "variable.parameter.dempl",
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=[,)])"
+        },
+        {
+          "name": "entity.name.type.dempl",
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_.]*(\\[\\])?)"
+        }
+      ]
+    },
+    "template-body": {
+      "patterns": [
+        { "include": "#d-control-flow" },
+        { "include": "#d-expression-escape" },
+        { "include": "#component-call" },
+        { "include": "text.html.basic" }
+      ]
+    },
+    "d-control-flow": {
+      "name": "meta.statement.d",
+      "begin": "^\\s*(if|foreach)\\s*(\\()",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.d" },
+        "2": { "name": "punctuation.definition.parameters.begin.d" }
+      },
+      "end": "(\\})",
+      "endCaptures": {
+        "1": { "name": "punctuation.section.block.end.d" }
+      },
+      "patterns": [
+        {
+          "name": "meta.expression.d",
+          "end": "(?=\\))",
+          "patterns": [{ "include": "source.d" }]
+        },
+        {
+          "name": "punctuation.definition.parameters.end.d",
+          "match": "\\)"
+        },
+        {
+          "name": "meta.block.d",
+          "begin": "\\{",
+          "beginCaptures": { "0": { "name": "punctuation.section.block.begin.d" } },
+          "end": "(?=})",
+          "patterns": [{ "include": "#template-body" }]
+        }
+      ]
+    },
+    "d-expression-escape": {
+      "name": "meta.embedded.line.d",
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.embedded.begin.d" }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.embedded.end.d" }
+      },
+      "contentName": "source.d.embedded",
+      "patterns": [
+        { "include": "source.d" }
+      ]
+    },
+    "component-call": {
+      "name": "meta.component-call.dempl",
+      "begin": "(@)([a-zA-Z_][a-zA-Z0-9_.]*)\\s*(\\()",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.component.dempl" },
+        "2": { "name": "entity.name.function.component.dempl" },
+        "3": { "name": "punctuation.definition.arguments.begin.dempl" }
+      },
+      "end": "(\\))",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.arguments.end.dempl" }
+      },
+      "patterns": [{ "include": "source.d" }]
+    }
+  }
+}

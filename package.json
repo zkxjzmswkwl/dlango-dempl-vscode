@@ -1,0 +1,61 @@
+{
+  "name": "dlango-dempl",
+  "displayName": "DEMPL - Dlango Templating",
+  "description": "Syntax highlighting and auto-transpilation for dempl files. Part of the Dlango project.",
+  "version": "0.0.2",
+  "publisher": "zkxjzmswkwl",
+  "engines": {
+    "vscode": "^1.96.2"
+  },
+  "main": "./out/extension.js",
+
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+
+  "contributes": {
+    "languages": [
+      {
+        "id": "dempl",
+        "aliases": ["DEMPL", "dempl"],
+        "extensions": [
+          ".dempl"
+        ],
+        "configuration": "./syntaxes/dempl.tmLanguage.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "dempl",
+        "scopeName": "text.html.dempl",
+        "path": "./syntaxes/dempl.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "dempl Configuration",
+      "properties": {
+        "dempl.compiler.path": {
+          "type": "string",
+          "default": "",
+          "description": "The absolute path to the 'dempl-gen' compiler executable."
+        },
+        "dempl.compiler.templatesRoot": {
+          "type": "string",
+          "default": "templates",
+          "description": "The path to the root templates directory to be scanned."
+        }
+      }
+    },
+    "configurationDefaults": {
+      "explorer.fileNesting.enabled": true,
+      "explorer.fileNesting.patterns": {
+        "*.dempl": "$(capture).d"
+      }
+    }
+  }
+
+}
